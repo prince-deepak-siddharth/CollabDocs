@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor — CollabDocs</title>
+    <meta name="description" content="Collaborative real-time document editor">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Quill.js -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="editor-page">
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Share Document</h2>
+                <button class="btn btn-ghost modal-close" id="share-close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="share-form">
+                <input type="text" id="share-username" placeholder="Enter username to share with..." autocomplete="off">
+                <button class="btn btn-primary" id="share-submit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="8.5" cy="7" r="4" />
+                        <line x1="20" y1="8" x2="20" y2="14" />
+                        <line x1="23" y1="11" x2="17" y2="11" />
+                    </svg>
+                    Share
+                </button>
+            </div>
+            <div id="share-message" class="share-message hidden"></div>
+            <div id="collaborators-list" class="collaborators-list">
+                <!-- Collaborators rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor Layout -->
+    <header class="editor-header">
+        <div class="header-left">
+            <a href="/" class="back-btn" title="Back to Dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
+            </a>
+            <input type="text" id="doc-title" class="doc-title-input" placeholder="Untitled Document"
+                autocomplete="off">
+            <span id="save-status" class="save-status">Saved</span>
+        </div>
+        <div class="header-right">
+            <div id="active-users" class="active-users">
+                <!-- Active user avatars rendered here -->
+            </div>
+            <button class="btn btn-primary btn-sm" id="share-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                    <polyline points="16 6 12 2 8 6" />
+                    <line x1="12" y1="2" x2="12" y2="15" />
+                </svg>
+                Share
+            </button>
+        </div>
+    </header>
+
+    <main class="editor-main">
+        <div class="editor-container">
+            <div id="toolbar">
+                <span class="ql-formats">
+                    <select class="ql-header">
+                        <option value="1">Heading 1</option>
+                        <option value="2">Heading 2</option>
+                        <option value="3">Heading 3</option>
+                        <option selected>Normal</option>
+                    </select>
+                    <select class="ql-font"></select>
+                    <select class="ql-size">
+                        <option value="small">Small</option>
+                        <option selected>Normal</option>
+                        <option value="large">Large</option>
+                        <option value="huge">Huge</option>
+                    </select>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-bold" title="Bold"></button>
+                    <button class="ql-italic" title="Italic"></button>
+                    <button class="ql-underline" title="Underline"></button>
+                    <button class="ql-strike" title="Strikethrough"></button>
+                </span>
+                <span class="ql-formats">
+                    <select class="ql-color" title="Text Color"></select>
+                    <select class="ql-background" title="Background Color"></select>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-list" value="ordered" title="Numbered List"></button>
+                    <button class="ql-list" value="bullet" title="Bullet List"></button>
+                    <button class="ql-indent" value="-1" title="Decrease Indent"></button>
+                    <button class="ql-indent" value="+1" title="Increase Indent"></button>
+                </span>
+                <span class="ql-formats">
+                    <select class="ql-align" title="Alignment"></select>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-blockquote" title="Blockquote"></button>
+                    <button class="ql-code-block" title="Code Block"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-link" title="Insert Link"></button>
+                    <button class="ql-image" title="Insert Image"></button>
+                    <button class="ql-video" title="Insert Video"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-script" value="sub" title="Subscript"></button>
+                    <button class="ql-script" value="super" title="Superscript"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-clean" title="Clear Formatting"></button>
+                </span>
+            </div>
+            <div id="editor"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="/js/editor.js"></script>
+</body>
+
+</html>
