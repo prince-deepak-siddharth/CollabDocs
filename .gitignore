@@ -1,11 +1,13 @@
 # Binaries
-collabdocs
+backend/collabdocs
 *.exe
 
 # Environment files (NEVER commit secrets)
 .env
 .env.local
 .env.production
+backend/.env
+backend/.env.local
 frontend/.env.local
 frontend/.env.production.local
 
@@ -21,7 +23,7 @@ Thumbs.db
 *.log
 
 # Go
-go.sum
+backend/go.sum
 
 # Node
 node_modules/

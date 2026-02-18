@@ -379,7 +379,7 @@ WS_WRITE_BUFFER_SIZE=1024
 Sync environment to the frontend:
 
 ```bash
-chmod +x sync-env.sh && ./sync-env.sh
+chmod +x backend/sync-env.sh && ./backend/sync-env.sh
 ```
 
 ### 3. Set Up the Database
@@ -394,6 +394,7 @@ createdb collabdocs
 ### 4. Start the Backend
 
 ```bash
+cd backend
 go mod download
 go run main.go
 ```
@@ -441,74 +442,76 @@ Navigate to **http://localhost:3000** -- register an account and start collabora
 ```
 collabdocs/
 |
-|-- main.go                  # Entry point -- HTTP server, router, CORS
-|-- go.mod                   # Go module and dependencies
-|-- sync-env.sh              # Syncs root .env to frontend/.env.local
+|-- backend/                     # Go API server
+|   |-- main.go                  # Entry point -- HTTP server, router, CORS
+|   |-- go.mod                   # Go module and dependencies
+|   |-- .env.example             # Environment variable template
+|   |-- sync-env.sh              # Syncs backend .env to frontend/.env.local
+|   |
+|   |-- config/
+|   |   +-- config.go            # Centralized config loader (.env + env vars)
+|   |
+|   |-- db/
+|   |   +-- database.go          # PostgreSQL connection and auto-migration
+|   |
+|   |-- models/
+|   |   |-- user.go              # User, auth request/response structs
+|   |   +-- document.go          # Document, collaborator, share structs
+|   |
+|   |-- handlers/
+|   |   |-- auth.go              # Register, login, JWT middleware
+|   |   |-- master_auth.go       # Master token middleware (admin)
+|   |   |-- document.go          # Document CRUD + sharing + save
+|   |   |-- share_link.go        # Share link create/resolve/delete
+|   |   +-- activity.go          # Activity logging and permission checks
+|   |
+|   |-- ws/
+|   |   |-- hub.go               # WebSocket room manager (pub/sub)
+|   |   +-- client.go            # WS client -- read/write pumps, message handling
+|   |
+|   +-- static/                  # Legacy vanilla HTML/JS/CSS frontend
+|       |-- index.html
+|       |-- editor.html
+|       |-- css/style.css
+|       +-- js/
+|           |-- app.js
+|           +-- editor.js
 |
-|-- config/
-|   +-- config.go            # Centralized config loader (.env + env vars)
-|
-|-- db/
-|   +-- database.go          # PostgreSQL connection and auto-migration
-|
-|-- models/
-|   |-- user.go              # User, auth request/response structs
-|   +-- document.go          # Document, collaborator, share structs
-|
-|-- handlers/
-|   |-- auth.go              # Register, login, JWT middleware
-|   |-- master_auth.go       # Master token middleware (admin)
-|   |-- document.go          # Document CRUD + sharing + save
-|   |-- share_link.go        # Share link create/resolve/delete
-|   +-- activity.go          # Activity logging and permission checks
-|
-|-- ws/
-|   |-- hub.go               # WebSocket room manager (pub/sub)
-|   +-- client.go            # WS client -- read/write pumps, message handling
-|
-|-- static/                  # Legacy vanilla HTML/JS/CSS frontend
-|   |-- index.html
-|   |-- editor.html
-|   |-- css/style.css
-|   +-- js/
-|       |-- app.js
-|       +-- editor.js
-|
-+-- frontend/                # Modern Next.js frontend
++-- frontend/                    # Modern Next.js frontend
     |-- package.json
-    |-- next.config.ts        # API proxy rewrites to backend
+    |-- next.config.ts            # API proxy rewrites to backend
     |-- tsconfig.json
     |-- next-env.d.ts
-    |-- quill.d.ts            # Quill CSS type declarations
+    |-- quill.d.ts                # Quill CSS type declarations
     |
     |-- app/
-    |   |-- layout.tsx        # Root layout (metadata, body)
-    |   |-- globals.css       # Full design system (light + dark)
-    |   |-- page.tsx          # Dashboard -- doc list, create, delete
+    |   |-- layout.tsx            # Root layout (metadata, body)
+    |   |-- globals.css           # Full design system (light + dark)
+    |   |-- page.tsx              # Dashboard -- doc list, create, delete
     |   |-- auth/
-    |   |   +-- page.tsx      # Login / Register with password strength
+    |   |   +-- page.tsx          # Login / Register with password strength
     |   |-- editor/
     |   |   +-- [id]/
-    |   |       +-- page.tsx  # Real-time collaborative Quill editor
+    |   |       +-- page.tsx      # Real-time collaborative Quill editor
     |   +-- shared/
     |       +-- [token]/
-    |           +-- page.tsx  # Guest access via share link
+    |           +-- page.tsx      # Guest access via share link
     |
     |-- components/
-    |   |-- ActiveUsers.tsx   # Colored avatar circles for live users
-    |   |-- ActivityPanel.tsx # Sidebar activity log with auto-refresh
-    |   |-- DocumentCard.tsx  # Document card in dashboard grid
-    |   |-- ShareModal.tsx    # Share via link or email (tabbed UI)
-    |   |-- ThemeToggle.tsx   # Dark/light mode toggle
-    |   |-- Toast.tsx         # Global toast notifications
-    |   +-- UsernameModal.tsx # Guest username entry modal
+    |   |-- ActiveUsers.tsx       # Colored avatar circles for live users
+    |   |-- ActivityPanel.tsx     # Sidebar activity log with auto-refresh
+    |   |-- DocumentCard.tsx      # Document card in dashboard grid
+    |   |-- ShareModal.tsx        # Share via link or email (tabbed UI)
+    |   |-- ThemeToggle.tsx       # Dark/light mode toggle
+    |   |-- Toast.tsx             # Global toast notifications
+    |   +-- UsernameModal.tsx     # Guest username entry modal
     |
     |-- lib/
-    |   |-- api.ts            # REST API client functions
-    |   +-- types.ts          # TypeScript interfaces
+    |   |-- api.ts                # REST API client functions
+    |   +-- types.ts              # TypeScript interfaces
     |
     +-- public/
-        +-- logo.png          # App logo
+        +-- logo.png              # App logo
 ```
 
 ---

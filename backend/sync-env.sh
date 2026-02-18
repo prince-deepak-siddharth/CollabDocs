@@ -7,13 +7,13 @@
 
 set -e
 
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ENV_FILE="$ROOT_DIR/.env"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+ENV_FILE="$ROOT_DIR/backend/.env"
 FRONTEND_ENV="$ROOT_DIR/frontend/.env.local"
 
 if [ ! -f "$ENV_FILE" ]; then
-    echo "❌ .env file not found at $ENV_FILE"
-    echo "   Run: cp .env.example .env"
+    echo "  .env file not found at $ENV_FILE"
+    echo "   Run: cp backend/.env.example backend/.env"
     exit 1
 fi
 
