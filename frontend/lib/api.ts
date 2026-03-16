@@ -2,6 +2,35 @@ import { Document, Collaborator, AuthResponse, ShareLink, ShareLinkResponse, Act
 
 const API_BASE = '';
 
+function trimTrailingSlash(value: string): string {
+    return value.replace(/\/+$/, '');
+}
+
+function normalizeWsBaseUrl(url: string): string {
+    if (!url) return '';
+
+    const trimmed = trimTrailingSlash(url.trim());
+
+    if (trimmed.startsWith('ws://') || trimmed.startsWith('wss://')) {
+        return trimmed;
+    }
+
+    if (trimmed.startsWith('http://')) {
+        return `ws://${trimmed.slice('http://'.length)}`;
+    }
+
+    if (trimmed.startsWith('https://')) {
+        return `wss://${trimmed.slice('https://'.length)}`;
+    }
+
+    if (trimmed.includes('://')) {
+        return trimmed;
+    }
+
+    const isProd = process.env.NEXT_PUBLIC_APP_ENV === 'production';
+    return `${isProd ? 'wss' : 'ws'}://${trimmed}`;
+}
+
 function getToken(): string | null {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('collabdocs_token');
@@ -152,7 +181,17 @@ export async function resolveShareLink(token: string): Promise<ShareLinkResponse
 }
 
 export function getWsUrl(docId: string, userName: string): string {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const configuredWsBase = normalizeWsBaseUrl(
+        process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || ''
+    );
+
+    if (configuredWsBase) {
+        const wsEndpoint = configuredWsBase.endsWith('/ws') ? configuredWsBase : `${configuredWsBase}/ws`;
+        return `${wsEndpoint}?doc_id=${docId}&user_name=${encodeURIComponent(userName)}`;
+    }
+
+    const isProd = process.env.NEXT_PUBLIC_APP_ENV === 'production';
+    const protocol = isProd ? 'wss:' : (window.location.protocol === 'https:' ? 'wss:' : 'ws:');
     const host = window.location.host;
     return `${protocol}//${host}/ws?doc_id=${docId}&user_name=${encodeURIComponent(userName)}`;
 }
